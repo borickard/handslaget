@@ -44,8 +44,9 @@ body::after{
 .app{
   width:100%;
   max-width:440px;
-  min-height:100dvh;
-  padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+  min-height:100vh;
+  min-height:100svh;
+  padding:14px 14px calc(14px + max(env(safe-area-inset-bottom),10px));
   display:flex;
   flex-direction:column;
   gap:12px;
@@ -54,6 +55,7 @@ svg{shape-rendering:crispEdges;display:block}
 
 /* status */
 .hud{
+  flex:none;
   border:3px solid var(--line);
   padding:8px 10px;
   display:flex;
@@ -79,7 +81,7 @@ svg{shape-rendering:crispEdges;display:block}
 
 /* scene */
 .scene{
-  flex:1;
+  flex:1 1 auto;
   position:relative;
   display:flex;
   flex-direction:column;
@@ -88,7 +90,7 @@ svg{shape-rendering:crispEdges;display:block}
   gap:10px;
   padding-top:4px;
 }
-.king{width:132px}
+.king{width:clamp(92px,26vh,132px)}
 .king.alone{opacity:.45;filter:grayscale(.8)}
 .bubble{
   position:relative;
@@ -119,7 +121,8 @@ svg{shape-rendering:crispEdges;display:block}
 .arena{
   position:relative;
   width:100%;
-  height:146px;
+  height:clamp(108px,20vh,146px);
+  flex:none;
   overflow:hidden;
 }
 .pair{position:absolute;left:0;right:0;top:4px;height:82px}
@@ -128,11 +131,11 @@ svg{shape-rendering:crispEdges;display:block}
   width:104px;
   transition:transform .42s steps(7,end);
 }
-.hand.you{left:50%;margin-left:-100px;transform:translateX(-210%)}
-.hand.king{left:50%;margin-left:-4px;transform:translateX(210%) scaleX(-1)}
+.hand.you{left:50%;margin-left:-100px;transform:translateX(-100vw)}
+.hand.king{left:50%;margin-left:-4px;transform:translateX(100vw) scaleX(-1)}
 .reach .hand.you,.withdraw .hand.you,.clasp .hand.you{transform:translateX(0)}
 .reach .hand.king{transform:translateX(0) scaleX(-1)}
-.withdraw .hand.king{transform:translateX(210%) scaleX(-1)}
+.withdraw .hand.king{transform:translateX(100vw) scaleX(-1)}
 .clasped{
   position:absolute;left:50%;top:4px;width:168px;margin-left:-84px;
   display:none;
@@ -169,7 +172,7 @@ svg{shape-rendering:crispEdges;display:block}
 .verdict.ok{color:var(--green)}
 
 /* choices */
-.choices{display:flex;flex-direction:column;gap:7px}
+.choices{flex:none;display:flex;flex-direction:column;gap:7px}
 .choice{
   font:inherit;font-size:21px;letter-spacing:1px;
   background:var(--panel);color:var(--text);
@@ -186,7 +189,7 @@ svg{shape-rendering:crispEdges;display:block}
 
 /* endings */
 .title{font-family:"Press Start 2P",VT323,monospace;font-size:19px;line-height:1.6;text-align:center}
-.end{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+.end{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
 .end p{font-size:22px;max-width:22em}
 .dim{color:var(--line)}
 .cta{
@@ -195,9 +198,55 @@ svg{shape-rendering:crispEdges;display:block}
   padding:10px;width:100%;cursor:pointer;
 }
 .cta.alt{background:transparent;color:var(--text);border-color:var(--line)}
-.foot{border-top:3px solid #3A3A66;padding-top:9px;text-align:center;font-size:19px;color:var(--line)}
+.foot{flex:none;border-top:3px solid #3A3A66;padding-top:9px;text-align:center;font-size:19px;color:var(--line)}
 .foot a{color:var(--text)}
-.actions{display:flex;flex-direction:column;gap:7px}
+.actions{flex:none;display:flex;flex-direction:column;gap:7px}
+/* Short viewports: phone with browser bars, split screen, landscape-ish.
+   Scale the board down so the choices stay on screen instead of under an overlay. */
+@media (max-width:365px){
+  .slot{font-size:15px;padding:5px 1px;letter-spacing:0}
+  .slots{gap:4px}
+  .lbl{font-size:17px}
+}
+@media (max-height:740px){
+  body{font-size:19px}
+  .app{gap:9px}
+  .scene{gap:8px}
+  .king{width:clamp(80px,19vh,108px)}
+  .bubble{min-height:78px;font-size:21px;padding:10px 11px}
+  .arena{height:clamp(94px,17vh,122px)}
+  .hand{width:88px}
+  .hand.you{margin-left:-85px}
+  .clasped{width:142px;margin-left:-71px}
+  .choice{padding:7px 10px;font-size:20px;gap:9px}
+  .choice svg{width:34px}
+  .lbl,.slot,.verdict{font-size:17px}
+  .pip{width:11px;height:11px}
+}
+@media (max-height:620px){
+  .king{width:clamp(66px,15vh,88px)}
+  .bubble{min-height:64px;font-size:19px}
+  .arena{height:clamp(84px,15vh,104px)}
+  .hand{width:76px}
+  .hand.you{margin-left:-74px}
+  .clasped{width:122px;margin-left:-61px}
+  .choice{padding:5px 9px;font-size:19px}
+  .choice svg{width:28px}
+}
+@media (max-height:520px){
+  .app{gap:6px;padding-top:9px}
+  .hud{padding:5px 8px;gap:5px}
+  .scene{gap:6px}
+  .king{width:clamp(52px,12vh,70px)}
+  .bubble{min-height:48px;font-size:18px;padding:8px 9px}
+  .arena{height:clamp(72px,14vh,86px)}
+  .hand{width:62px}
+  .hand.you{margin-left:-60px}
+  .clasped{width:100px;margin-left:-50px}
+  .choice{padding:4px 8px;font-size:18px}
+  .choice svg{width:24px}
+  .lbl,.slot,.verdict{font-size:16px}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
