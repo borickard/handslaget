@@ -22,7 +22,6 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
 body{
   background:var(--bg);
   color:var(--text);
@@ -31,6 +30,7 @@ body{
   line-height:1.35;
   display:flex;
   justify-content:center;
+  align-items:flex-start;
   overflow-x:hidden;
 }
 body::after{
@@ -222,6 +222,11 @@ svg{shape-rendering:crispEdges;display:block}
   .choice svg{width:34px}
   .lbl,.slot,.verdict{font-size:17px}
   .pip{width:11px;height:11px}
+  .end{gap:11px}
+  .title{font-size:17px;line-height:1.5}
+  .end p{font-size:20px}
+  .cta{padding:8px;font-size:20px}
+  .foot{font-size:17px;padding-top:7px}
 }
 @media (max-height:620px){
   .king{width:clamp(66px,15vh,88px)}
@@ -232,20 +237,30 @@ svg{shape-rendering:crispEdges;display:block}
   .clasped{width:122px;margin-left:-61px}
   .choice{padding:5px 9px;font-size:19px}
   .choice svg{width:28px}
+  .end{gap:8px}
+  .title{font-size:15px}
+  .end p{font-size:18px}
+  .cta{padding:6px;font-size:19px}
+  .foot{font-size:16px;padding-top:6px}
 }
 @media (max-height:520px){
-  .app{gap:6px;padding-top:9px}
-  .hud{padding:5px 8px;gap:5px}
-  .scene{gap:6px}
+  .app{gap:5px;padding-top:8px}
+  .hud{padding:4px 8px;gap:4px}
+  .scene{gap:5px}
   .king{width:clamp(52px,12vh,70px)}
-  .bubble{min-height:48px;font-size:18px;padding:8px 9px}
-  .arena{height:clamp(72px,14vh,86px)}
+  .bubble{min-height:44px;font-size:18px;padding:7px 9px}
+  .arena{height:clamp(66px,13vh,80px)}
   .hand{width:62px}
   .hand.you{margin-left:-60px}
   .clasped{width:100px;margin-left:-50px}
   .choice{padding:4px 8px;font-size:18px}
   .choice svg{width:24px}
   .lbl,.slot,.verdict{font-size:16px}
+  .end{gap:6px}
+  .title{font-size:13px}
+  .end p{font-size:16px}
+  .cta{padding:5px;font-size:18px}
+  .foot{font-size:15px;padding-top:5px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -477,7 +492,7 @@ function render(){
     var deal = S.screen === "deal";
     app.innerHTML =
       '<div class="end">'
-      + '<div style="width:132px">' + (deal ? KING : KING) + '</div>'
+      + '<div class="king' + (deal ? '' : ' alone') + '">' + KING + '</div>'
       + '<h1 class="title">' + (deal ? "VI HAR ETT AVTAL" : "STREJK") + '</h1>'
       + (deal
           ? '<p>Kungen är nöjd. De anställda är nöjda.</p><p class="dim">Ett kollektivavtal tar ingenting från någon. Det sätter ett golv, inte ett tak, och ger båda sidor samma spelregler att jobba efter.</p>'
@@ -488,7 +503,6 @@ function render(){
         + '<button class="cta alt" id="share">DELA</button>'
       + '</div>'
       + '<div class="foot"><a href="' + UNIONEN_URL + '" target="_blank" rel="noopener">Läs om konflikten på King</a><br>Unionen</div>';
-    if (!deal){ app.querySelector(".end div").className = "king alone"; }
     document.getElementById("again").onclick = function(){ reset(); render(); };
     document.getElementById("share").onclick = share;
     return;
