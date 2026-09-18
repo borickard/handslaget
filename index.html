@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HANDSLAGET</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12122B;
+  --panel:#1E1E3F;
+  --line:#8C8CD0;
+  --text:#E8E8FF;
+  --cyan:#5CE0E0;
+  --gold:#D4A94E;
+  --green:#5CD47F;
+  --skin:#D9A078;
+  --skin-d:#A9724F;
+  --robe:#7A4FA9;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:VT323,"Courier New",monospace;
+  font-size:21px;
+  line-height:1.35;
+  display:flex;
+  justify-content:center;
+  overflow-x:hidden;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);
+  z-index:50;
+}
+.app{
+  width:100%;
+  max-width:440px;
+  min-height:100dvh;
+  padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+svg{shape-rendering:crispEdges;display:block}
+
+/* status */
+.hud{
+  border:3px solid var(--line);
+  padding:8px 10px;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lbl{font-size:19px;color:var(--line);letter-spacing:1px}
+.pips{display:flex;gap:5px}
+.pip{width:13px;height:13px;background:var(--gold)}
+.pip.spent{background:transparent;box-shadow:inset 0 0 0 3px #3A3A66}
+.slots{display:flex;gap:6px}
+.slot{
+  flex:1;
+  border:3px solid #3A3A66;
+  padding:5px 2px;
+  text-align:center;
+  font-size:18px;
+  color:#6E6EA8;
+  letter-spacing:.5px;
+}
+.slot.ok{border-color:var(--green);color:var(--green);background:rgba(92,212,127,.1)}
+
+/* scene */
+.scene{
+  flex:1;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  padding-top:4px;
+}
+.king{width:132px}
+.king.alone{opacity:.45;filter:grayscale(.8)}
+.bubble{
+  position:relative;
+  border:3px solid var(--text);
+  background:#000;
+  padding:12px 13px;
+  width:100%;
+  min-height:98px;
+  font-size:23px;
+  line-height:1.3;
+}
+.bubble::before,.bubble::after{
+  content:"";position:absolute;background:var(--text);
+}
+.bubble::before{width:14px;height:3px;top:-3px;left:50%;margin-left:-22px;background:#000}
+.bubble::after{
+  width:14px;height:11px;top:-14px;left:50%;margin-left:-22px;
+  background:#000;
+  border-left:3px solid var(--text);
+  border-right:3px solid var(--text);
+  transform:skewX(-20deg);
+}
+.bubble b{font-weight:400;color:var(--cyan)}
+.cursor{display:inline-block;width:11px;height:19px;background:var(--text);vertical-align:-2px;animation:blink .9s steps(1,end) infinite}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* arena */
+.arena{
+  position:relative;
+  width:100%;
+  height:146px;
+  overflow:hidden;
+}
+.pair{position:absolute;left:0;right:0;top:4px;height:82px}
+.hand{
+  position:absolute;
+  width:104px;
+  transition:transform .42s steps(7,end);
+}
+.hand.you{left:50%;margin-left:-100px;transform:translateX(-210%)}
+.hand.king{left:50%;margin-left:-4px;transform:translateX(210%) scaleX(-1)}
+.reach .hand.you,.withdraw .hand.you,.clasp .hand.you{transform:translateX(0)}
+.reach .hand.king{transform:translateX(0) scaleX(-1)}
+.withdraw .hand.king{transform:translateX(210%) scaleX(-1)}
+.clasped{
+  position:absolute;left:50%;top:4px;width:168px;margin-left:-84px;
+  display:none;
+}
+.clasp .clasped{display:block;animation:shake .85s steps(1,end) 1}
+.clasp .hand{display:none}
+@keyframes shake{
+  0%{transform:translateY(0)}
+  13%{transform:translateY(9px)}
+  26%{transform:translateY(-7px)}
+  39%{transform:translateY(8px)}
+  52%{transform:translateY(-6px)}
+  65%{transform:translateY(6px)}
+  80%{transform:translateY(-4px)}
+  100%{transform:translateY(0)}
+}
+.hand.wag svg{animation:wag .9s steps(1,end) 2;transform-origin:50% 90%}
+@keyframes wag{
+  0%{transform:rotate(0deg)}
+  25%{transform:rotate(14deg)}
+  50%{transform:rotate(0deg)}
+  75%{transform:rotate(-14deg)}
+  100%{transform:rotate(0deg)}
+}
+.flash{
+  position:absolute;inset:0;background:var(--green);opacity:0;pointer-events:none;
+}
+.clasp .flash{animation:flash .5s steps(2,end) 1}
+@keyframes flash{0%{opacity:.5}50%{opacity:0}75%{opacity:.3}100%{opacity:0}}
+.verdict{
+  position:absolute;left:0;right:0;bottom:0;text-align:center;
+  font-size:21px;line-height:1.15;letter-spacing:1px;color:var(--line);
+}
+.verdict.ok{color:var(--green)}
+
+/* choices */
+.choices{display:flex;flex-direction:column;gap:7px}
+.choice{
+  font:inherit;font-size:21px;letter-spacing:1px;
+  background:var(--panel);color:var(--text);
+  border:3px solid var(--line);
+  padding:9px 11px;
+  display:flex;align-items:center;gap:11px;
+  cursor:pointer;text-align:left;width:100%;
+}
+.choice svg{width:40px;flex:none}
+.choice:hover:not(:disabled){background:#2C2C5C;border-color:var(--cyan)}
+.choice:active:not(:disabled){transform:translate(2px,2px)}
+.choice:disabled{opacity:.35;cursor:default}
+.choice:focus-visible,.cta:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+
+/* endings */
+.title{font-family:"Press Start 2P",VT323,monospace;font-size:19px;line-height:1.6;text-align:center}
+.end{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+.end p{font-size:22px;max-width:22em}
+.dim{color:var(--line)}
+.cta{
+  font:inherit;font-size:21px;letter-spacing:1px;
+  background:var(--text);color:var(--bg);border:3px solid var(--text);
+  padding:10px;width:100%;cursor:pointer;
+}
+.cta.alt{background:transparent;color:var(--text);border-color:var(--line)}
+.foot{border-top:3px solid #3A3A66;padding-top:9px;text-align:center;font-size:19px;color:var(--line)}
+.foot a{color:var(--text)}
+.actions{display:flex;flex-direction:column;gap:7px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+/* Länk till Unionens sida om konflikten. Byt till rätt URL före lansering. */
+var UNIONEN_URL = "https://www.unionen.se";
+
+/* ---- pixel sprites ---- */
+function sprite(rows, pal, w){
+  var h = rows.length, out = '<svg viewBox="0 0 ' + w + ' ' + h + '">';
+  for (var y=0; y<h; y++){
+    for (var x=0; x<w; x++){
+      var c = rows[y][x];
+      if (c && c !== "." && pal[c]) out += '<rect x="'+x+'" y="'+y+'" width="1" height="1" fill="'+pal[c]+'"/>';
+    }
+  }
+  return out + "</svg>";
+}
+
+var KING = sprite([
+"................",
+"...G..G..G..G...",
+"...G..G..G..G...",
+"...GGGGGGGGGG...",
+"...GgGgGgGgGG...",
+"....SSSSSSSS....",
+"....SSSSSSSS....",
+"....SESSSSES....",
+"....SSSSSSSS....",
+"....SSMMMMSS....",
+".....WWWWWW.....",
+"....WWWWWWWW....",
+"...RRRRRRRRRR...",
+"..RRRRWWWWRRRR..",
+"..RRRRWWWWRRRR..",
+"..RRRRRRRRRRRR.."
+], {G:"#D4A94E",g:"#8E6B22",S:"#D9A078",E:"#2A1C12",M:"#A9724F",W:"#E8E8FF",R:"#7A4FA9"}, 16);
+
+/* öppen hand från sidan, riktad åt höger */
+var HAND_OPEN = [
+"........................",
+"...........sHH..........",
+"..........sHHHH.........",
+".........HHHHHHH........",
+".....HHHHHHHHHHs........",
+"....HHHHHHHHHHHHHHHHHH..",
+"bbbbHHHHHHHHHHHHHHHHHHH.",
+"bbbbHHHHHHHssssssssssss.",
+"bbbbHHHHHHHHHHHHHHHHHHHH",
+"bbbbHHHHHHHHHHHHHHHHHHHH",
+"bbbbHHHHHHHsssssssssssss",
+"bbbbHHHHHHHHHHHHHHHHHHH.",
+"bbbbHHHHHHHHHHHHHHHHHH..",
+"bbbbHHHHHHHssssssssss...",
+"....HHHHHHHHHHHHHHHHH...",
+".....HHHHHHHHHHHHHH.....",
+"......HHHHHHHHHHH.......",
+"........................"
+];
+/* två händer i grepp */
+var CLASP = [
+"....................................",
+"..............sHHHH.................",
+".............HHHHHHs................",
+"..........HHHHHHHHHHHH..............",
+".....HHHHHHHHHHHHHHHHHHHHHH.........",
+"....HHHHHHHHHHHHHHHHHHHHHHHHHHH.....",
+"bbbbHHHHHHHHHHHHHHHHHHHHHHHHHHHHpppp",
+"bbbbHHHHHHHHHHHHHHssssssHHHHHHHHpppp",
+"bbbbHHHHHHHHHHHHHHHHHHHHHHHHHHHHpppp",
+"bbbbHHHHHHHHHHHHHHssssssHHHHHHHHpppp",
+"bbbbHHHHHHHHHHHHHHHHHHHHHHHHHHHHpppp",
+"bbbbHHHHHHHHHHHHHHssssssHHHHHHHHpppp",
+"bbbbHHHHHHHHHHHHHHHHHHHHHHHHHHHHpppp",
+"....HHHHHHHHHHHHHHHHHHHHHHHHHHH.....",
+".....HHHHHHHHHHHHHHHHHHHHHHHHH......",
+"........HHHHHHHHHHHHHHHHHHH.........",
+"...................................."
+];
+/* icke sa nicke */
+var NOPE = [
+"......HHH.......",
+"......HsH.......",
+"......HHH.......",
+"......HHH.......",
+"......HHH.......",
+".....HHHHH......",
+"...HHHHHHHH.....",
+"..HHHHHHHHHH....",
+"..HHssssHHHH....",
+"..HHHHHHHHHH....",
+"..HHssssHHHH....",
+"..HHHHHHHHHH....",
+"..HHssssHHHH....",
+"..HHHHHHHHHH....",
+"...HHHHHHHH.....",
+"...pppppppp.....",
+"...pppppppp.....",
+"................"
+];
+var SKIN = {H:"#D9A078",s:"#A9724F"};
+function pal(extra){ var p={H:SKIN.H,s:SKIN.s}; for (var k in extra) p[k]=extra[k]; return p; }
+
+var HAND_YOU  = sprite(HAND_OPEN, pal({b:"#3B7AC4"}), 24);
+var HAND_KING = sprite(HAND_OPEN, pal({b:"#7A4FA9"}), 24);
+var HAND_ICON = sprite(HAND_OPEN, pal({b:"#8C8CD0"}), 24);
+var CLASP_S   = sprite(CLASP, pal({b:"#3B7AC4",p:"#7A4FA9"}), 36);
+var NOPE_S    = sprite(NOPE, pal({p:"#7A4FA9"}), 16);
+
+/* ---- content ---- */
+var TOPICS = {
+  trygghet:{label:"TRYGGHET", lines:[
+    ["Ingen här behöver oroa sig för sin ","anställning","."],
+    ["","Pensionen"," är ordnad, det behöver ingen oroa sig för."],
+    ["Vi har ","försäkringar"," som täcker det mesta."]
+  ]},
+  inflytande:{label:"INFLYTANDE", lines:[
+    ["Min ","dörr står alltid öppen","."],
+    ["Vi ","lyssnar"," på våra medarbetare, hela tiden."],
+    ["Alla får ","säga sitt"," på tisdagsmötet."]
+  ]},
+  villkor:{label:"VILLKOR", lines:[
+    ["Vi betalar över ","marknadslön","."],
+    ["Se på ","förmånspaketet",". Det är generöst."],
+    ["Vi ligger över ","branschsnittet"," på det mesta."]
+  ]}
+};
+var ORDER = ["trygghet","inflytande","villkor"];
+
+/* ---- state ---- */
+var S, typer;
+function reset(){
+  S = {agreed:[],tries:4,current:null,busy:true,taught:false,screen:"play"};
+  nextLine();
+}
+function remaining(){ return ORDER.filter(function(t){return S.agreed.indexOf(t)<0;}); }
+function nextLine(){
+  var pool = remaining();
+  var t = pool[Math.floor(Math.random()*pool.length)];
+  var ls = TOPICS[t].lines;
+  S.current = {topic:t, line:ls[Math.floor(Math.random()*ls.length)]};
+}
+
+/* ---- typewriter ---- */
+function type(el, parts, done){
+  var full = parts[0] + parts[1] + parts[2];
+  var kStart = parts[0].length, kEnd = kStart + parts[1].length;
+  var i = 0;
+  clearInterval(typer);
+  function paint(){
+    var a = full.slice(0, Math.min(i,kStart));
+    var b = full.slice(Math.min(i,kStart), Math.min(i,kEnd));
+    var c = full.slice(Math.min(i,kEnd), i);
+    el.innerHTML = a + "<b>" + b + "</b>" + c + '<span class="cursor"></span>';
+  }
+  typer = setInterval(function(){
+    i++;
+    paint();
+    if (i >= full.length){ clearInterval(typer); done && done(); }
+  }, 26);
+  paint();
+  el.onclick = function(){ clearInterval(typer); i = full.length; paint(); done && done(); };
+}
+
+/* ---- flow ---- */
+function choose(topic){
+  if (S.busy) return;
+  S.busy = true;
+  var match = topic === S.current.topic;
+  var arena = document.getElementById("arena");
+  var verdict = document.getElementById("verdict");
+  setButtons(false);
+  arena.className = "arena reach";
+
+  setTimeout(function(){
+    if (match){
+      arena.className = "arena reach clasp";
+      verdict.className = "verdict ok";
+      verdict.textContent = "HANDSLAG. NI ENADES OM " + TOPICS[S.current.topic].label + ".";
+      S.agreed.push(S.current.topic);
+    } else {
+      var kh = document.getElementById("kinghand");
+      kh.innerHTML = NOPE_S;
+      kh.classList.add("wag");
+      verdict.className = "verdict";
+      verdict.textContent = "KUNGEN PRATADE OM " + TOPICS[S.current.topic].label + ". ETT FÖRSÖK BORTA.";
+      S.tries--;
+      setTimeout(function(){ arena.className = "arena withdraw"; }, 1150);
+    }
+    paintHud();
+    setTimeout(function(){
+      if (S.agreed.length === 3){ S.screen = "deal"; render(); return; }
+      if (S.tries === 0){ S.screen = "strike"; render(); return; }
+      nextLine();
+      render();
+    }, match ? 1600 : 2000);
+  }, 520);
+}
+
+function setButtons(on){
+  Array.prototype.forEach.call(document.querySelectorAll(".choice"), function(b){ b.disabled = !on; });
+}
+function paintHud(){
+  var pips = document.getElementById("pips");
+  if (pips){
+    pips.innerHTML = "";
+    for (var i=0;i<4;i++){
+      var d = document.createElement("span");
+      d.className = "pip" + (i < S.tries ? "" : " spent");
+      pips.appendChild(d);
+    }
+  }
+  var slots = document.getElementById("slots");
+  if (slots){
+    slots.innerHTML = ORDER.map(function(t){
+      var ok = S.agreed.indexOf(t) >= 0;
+      return '<div class="slot' + (ok?" ok":"") + '">' + (ok ? "&#10003; " : "") + TOPICS[t].label + "</div>";
+    }).join("");
+  }
+}
+
+function render(){
+  var app = document.getElementById("app");
+
+  if (S.screen === "deal" || S.screen === "strike"){
+    var deal = S.screen === "deal";
+    app.innerHTML =
+      '<div class="end">'
+      + '<div style="width:132px">' + (deal ? KING : KING) + '</div>'
+      + '<h1 class="title">' + (deal ? "VI HAR ETT AVTAL" : "STREJK") + '</h1>'
+      + (deal
+          ? '<p>Kungen är nöjd. De anställda är nöjda.</p><p class="dim">Ett kollektivavtal tar ingenting från någon. Det sätter ett golv, inte ett tak, och ger båda sidor samma spelregler att jobba efter.</p>'
+          : '<p>Vi är kvar. Handen är fortfarande utsträckt.</p><p class="dim">Vi ville mötas. Det gick inte den här gången. Vi lägger ner arbetet tills vi kan bygga det här tillsammans.</p>')
+      + '</div>'
+      + '<div class="actions">'
+        + '<button class="cta" id="again">SPELA IGEN</button>'
+        + '<button class="cta alt" id="share">DELA</button>'
+      + '</div>'
+      + '<div class="foot"><a href="' + UNIONEN_URL + '" target="_blank" rel="noopener">Läs om konflikten på King</a><br>Unionen</div>';
+    if (!deal){ app.querySelector(".end div").className = "king alone"; }
+    document.getElementById("again").onclick = function(){ reset(); render(); };
+    document.getElementById("share").onclick = share;
+    return;
+  }
+
+  app.innerHTML =
+    '<div class="hud">'
+      + '<div class="row"><span class="lbl">FÖRSÖK KVAR</span><span class="pips" id="pips"></span></div>'
+      + '<div class="slots" id="slots"></div>'
+    + '</div>'
+    + '<div class="scene">'
+      + '<div class="king">' + KING + '</div>'
+      + '<div class="bubble" id="bubble"></div>'
+      + '<div class="arena" id="arena">'
+        + '<div class="pair">'
+          + '<div class="hand you">' + HAND_YOU + '</div>'
+          + '<div class="hand king" id="kinghand">' + HAND_KING + '</div>'
+          + '<div class="clasped">' + CLASP_S + '</div>'
+        + '</div>'
+        + '<div class="flash"></div>'
+        + '<div class="verdict" id="verdict"></div>'
+      + '</div>'
+    + '</div>'
+    + '<div class="choices">'
+      + remaining().map(function(t){
+          return '<button class="choice" data-t="'+t+'" disabled>' + HAND_ICON + TOPICS[t].label + '</button>';
+        }).join("")
+    + '</div>';
+
+  paintHud();
+  Array.prototype.forEach.call(app.querySelectorAll(".choice"), function(b){
+    b.onclick = function(){ choose(b.dataset.t); };
+  });
+
+  type(document.getElementById("bubble"), S.current.line, function(){
+    S.busy = false;
+    setButtons(true);
+    if (!S.taught){
+      S.taught = true;
+      document.getElementById("verdict").textContent = "VÄLJ DET KUNGEN PRATAR OM.";
+    }
+  });
+}
+
+function share(){
+  var data = {title:"HANDSLAGET", text:"Vi vill vara med och påverka.", url:location.href};
+  if (navigator.share){ navigator.share(data).catch(function(){}); return; }
+  if (navigator.clipboard){
+    navigator.clipboard.writeText(location.href);
+    var b = document.getElementById("share");
+    b.textContent = "LÄNK KOPIERAD";
+    setTimeout(function(){ b.textContent = "DELA"; }, 1800);
+  }
+}
+
+reset();
+render();
+</script>
+</body>
+</html>
