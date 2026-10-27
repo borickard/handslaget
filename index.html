@@ -204,7 +204,13 @@ svg{shape-rendering:crispEdges;display:block}
 .title{font-family:"Press Start 2P",VT323,monospace;font-size:19px;line-height:1.6;text-align:center}
 .end{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
 .end p{font-size:22px;max-width:22em}
+.hero,.copy{display:flex;flex-direction:column;align-items:center;gap:16px}
+.copy{gap:12px}
 .dim{color:var(--line)}
+.rules{list-style:none;display:flex;flex-direction:column;gap:9px;text-align:left;max-width:22em;font-size:21px}
+.rules li{display:flex;gap:11px;align-items:flex-start}
+.rules svg{width:34px;flex:none;margin-top:4px}
+.rules b{font-weight:400;color:var(--cyan)}
 .cta{
   font:inherit;font-size:21px;letter-spacing:1px;
   background:var(--text);color:var(--bg);border:3px solid var(--text);
@@ -279,6 +285,55 @@ svg{shape-rendering:crispEdges;display:block}
   .end p{font-size:16px}
   .cta{padding:5px;font-size:18px}
   .foot{font-size:15px;padding-top:5px}
+}
+/* Desktop: landscape, two columns. The king and the handshake on the left,
+   the score and the choices on the right. Comes after the height queries so it wins. */
+@media (orientation:landscape) and (min-width:900px) and (min-height:480px){
+  body{font-size:22px;align-items:center;min-height:100vh;min-height:100svh}
+  .app{
+    max-width:1120px;
+    min-height:0;
+    padding:clamp(16px,4vh,40px) 32px;
+    display:grid;
+    column-gap:clamp(28px,4vw,56px);
+    row-gap:clamp(10px,2.4vh,20px);
+    align-content:center;
+  }
+  .app.play{
+    grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);
+    grid-template-rows:auto 1fr;
+    grid-template-areas:"scene hud" "scene choices";
+  }
+  .play .hud{grid-area:hud;padding:12px 14px;gap:10px}
+  .play .scene{grid-area:scene;justify-content:center;gap:clamp(10px,2vh,18px);padding:0}
+  .play .choices{grid-area:choices;align-self:start;gap:clamp(7px,1.4vh,12px)}
+  .king{width:clamp(96px,24vh,190px)}
+  .bubble{min-height:clamp(70px,13vh,120px);font-size:clamp(20px,3.2vh,28px);padding:clamp(9px,1.8vh,16px) 18px}
+  .arena{height:clamp(96px,19vh,170px)}
+  .hand{width:clamp(70px,14vh,124px)}
+  .hand.you{margin-left:calc(-1 * clamp(68px,13.5vh,120px))}
+  .clasped{width:clamp(112px,22vh,200px);margin-left:calc(-.5 * clamp(112px,22vh,200px))}
+  .verdict{font-size:clamp(17px,2.8vh,23px)}
+  .choice{padding:clamp(6px,1.5vh,13px) 14px;font-size:clamp(19px,3vh,24px)}
+  .choice svg{width:clamp(28px,5.5vh,48px)}
+  .lbl,.slot{font-size:clamp(16px,2.6vh,20px)}
+  .pip{width:14px;height:14px}
+  .lang button{font-size:16px;padding:4px 7px}
+
+  .app.static{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    grid-template-rows:1fr auto auto;
+    grid-template-areas:"hero copy" "hero actions" "hero foot";
+  }
+  .static .end{display:contents}
+  .static .hero{grid-area:hero;justify-content:center;gap:clamp(14px,3vh,28px)}
+  .static .hero .king{width:clamp(120px,34vh,260px)}
+  .static .title{font-size:clamp(17px,3.2vh,26px)}
+  .static .copy{grid-area:copy;align-self:end;align-items:flex-start;text-align:left;gap:clamp(10px,2vh,18px)}
+  .static .copy p,.rules{font-size:clamp(19px,3vh,24px);max-width:none}
+  .static .actions{grid-area:actions;flex-direction:row}
+  .static .foot{grid-area:foot;text-align:left}
+  .static .footrow{justify-content:flex-start}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -401,6 +456,14 @@ var ORDER = ["trygghet","inflytande","villkor"];
 var STR = {
   en:{
     tries:"TRIES LEFT",
+    introLead:"The king says all the right things. Can you get him to shake on them?",
+    introRules:[
+      "The king talks about $. Pick the one he means.",
+      "Pick right and you shake hands on it. Agree on all three and you have a collective agreement.",
+      "You have 4 tries. Run out and it is a strike."
+    ],
+    or:"or",
+    start:"START",
     hint:"PICK WHAT THE KING IS TALKING ABOUT.",
     shake:"HANDSHAKE. YOU AGREED ON $.",
     miss:"THE KING TALKED ABOUT $. ONE TRY GONE.",
@@ -417,7 +480,7 @@ var STR = {
     footOrg:"Unionen",
     shareText:"We want a say in our workplace.",
     topics:{
-      trygghet:{label:"SECURITY", lines:[
+      trygghet:{label:"JOB SECURITY", lines:[
         ["Nobody here needs to worry about their ","job","."],
         ["Your ","pension"," is sorted, nobody needs to worry about that."],
         ["We have ","insurance"," that covers most of it."]
@@ -436,6 +499,14 @@ var STR = {
   },
   sv:{
     tries:"F\u00d6RS\u00d6K KVAR",
+    introLead:"Kungen s\u00e4ger alla r\u00e4tta saker. Kan du f\u00e5 honom att ta i hand p\u00e5 dem?",
+    introRules:[
+      "Kungen pratar om $. V\u00e4lj det han menar.",
+      "V\u00e4lj r\u00e4tt s\u00e5 tar ni i hand p\u00e5 det. Enas om alla tre s\u00e5 har ni ett kollektivavtal.",
+      "Du har 4 f\u00f6rs\u00f6k. Tar de slut blir det strejk."
+    ],
+    or:"eller",
+    start:"SPELA",
     hint:"V\u00c4LJ DET KUNGEN PRATAR OM.",
     shake:"HANDSLAG. NI ENADES OM $.",
     miss:"KUNGEN PRATADE OM $. ETT F\u00d6RS\u00d6K BORTA.",
@@ -605,14 +676,38 @@ function render(){
   var app = document.getElementById("app");
   S.resolving = false;
 
+  app.className = "app " + (S.screen === "play" ? "play" : "static");
+
+  if (S.screen === "intro"){
+    var labels = ORDER.map(function(t){ return '<b>' + TOP(t).label + '</b>'; });
+    var topics = labels.slice(0, -1).join(", ") + " " + T().or + " " + labels[labels.length - 1];
+    app.innerHTML =
+      '<div class="end">'
+      + '<div class="hero"><div class="king">' + KING + '</div>'
+      + '<h1 class="title">HANDSLAGET</h1></div>'
+      + '<div class="copy"><p>' + T().introLead + '</p>'
+      + '<ol class="rules">' + T().introRules.map(function(r){
+          return '<li>' + HAND_ICON + '<span>' + fill(r, topics) + '</span></li>';
+        }).join("") + '</ol></div>'
+      + '</div>'
+      + '<div class="actions"><button class="cta" id="start">' + T().start + '</button></div>'
+      + '<div class="foot">'
+        + '<a href="' + UNIONEN_URL + '" target="_blank" rel="noopener">' + T().footLink + '</a>'
+        + '<div class="footrow"><span>' + T().footOrg + '</span>' + langHtml() + '</div>'
+      + '</div>';
+    document.getElementById("start").onclick = function(){ S.screen = "play"; render(); };
+    bindLang(app);
+    return;
+  }
+
   if (S.screen === "deal" || S.screen === "strike"){
     var deal = S.screen === "deal";
     app.innerHTML =
       '<div class="end">'
-      + '<div class="king' + (deal ? '' : ' alone') + '">' + KING + '</div>'
-      + '<h1 class="title">' + (deal ? T().dealTitle : T().strikeTitle) + '</h1>'
-      + '<p>' + (deal ? T().dealLead : T().strikeLead) + '</p>'
-      + '<p class="dim">' + (deal ? T().dealBody : T().strikeBody) + '</p>'
+      + '<div class="hero"><div class="king' + (deal ? '' : ' alone') + '">' + KING + '</div>'
+      + '<h1 class="title">' + (deal ? T().dealTitle : T().strikeTitle) + '</h1></div>'
+      + '<div class="copy"><p>' + (deal ? T().dealLead : T().strikeLead) + '</p>'
+      + '<p class="dim">' + (deal ? T().dealBody : T().strikeBody) + '</p></div>'
       + '</div>'
       + '<div class="actions">'
         + '<button class="cta" id="again">' + T().again + '</button>'
@@ -681,6 +776,7 @@ function share(){
 
 initLang();
 reset();
+S.screen = "intro";
 render();
 </script>
 </body>
